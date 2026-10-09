@@ -100,7 +100,8 @@ router.put('/:id', (req, res) => {
   for (const f of fields) {
     if (Object.prototype.hasOwnProperty.call(req.body, f)) next[f] = req.body[f];
   }
-  if (next.type && !TASK_TYPES.includes(next.type)) next.type = '其他';
+  // 未改动的旧类型原样保留，只有传入了不认识的新类型才归为「其他」
+  if (next.type && !TASK_TYPES.includes(next.type) && next.type !== existing.type) next.type = '其他';
   if (next.status && !STORED_STATUSES.includes(next.status)) next.status = existing.status;
 
   const completed_at =

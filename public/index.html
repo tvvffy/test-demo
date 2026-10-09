@@ -11,7 +11,7 @@
     <header class="app-header">
       <div>
         <h1>教辅工作管理</h1>
-        <p>任务与排班安排 · 工作完成情况统计</p>
+        <p>任务与排班安排 · 工作完成情况统计 · 绩效考核</p>
       </div>
       <div class="header-actions">
         <button class="icon-btn" id="staffBtn" title="管理教辅人员">👥</button>
@@ -22,6 +22,7 @@
     <nav class="tabs">
       <button class="tab-btn active" data-view="dashboard">仪表盘</button>
       <button class="tab-btn" data-view="tasks">任务与排班</button>
+      <button class="tab-btn" data-view="kpi">绩效考核</button>
     </nav>
 
     <!-- Dashboard -->
@@ -63,6 +64,156 @@
         <div id="taskTableWrap"></div>
       </div>
     </section>
+
+    <!-- KPI -->
+    <section class="view" id="view-kpi">
+      <div class="toolbar">
+        <div class="month-switch">
+          <button class="btn" id="kpiPrevMonth" title="上个月">‹</button>
+          <input type="month" id="kpiMonth" />
+          <button class="btn" id="kpiNextMonth" title="下个月">›</button>
+        </div>
+        <span class="badge" id="kpiArchiveBadge" hidden><span class="dot dot-completed"></span>已归档</span>
+        <div class="spacer"></div>
+        <button class="btn" id="kpiRulesBtn">考核规则</button>
+        <button class="btn btn-primary" id="kpiAddScoreBtn">+ 录入得分</button>
+        <button class="btn btn-primary" id="kpiAddDeductionBtn">+ 记扣分</button>
+      </div>
+
+      <div class="panel">
+        <div class="panel-title">
+          <span id="kpiResultsTitle">考核结果</span>
+          <span class="panel-actions">
+            <button class="btn" id="kpiExportBtn">导出 Excel</button>
+            <button class="btn" id="kpiArchiveBtn">归档本月</button>
+          </span>
+        </div>
+        <div class="kpi-hint" id="kpiResultsHint"></div>
+        <div class="table-scroll" id="kpiResults"></div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-title">
+          本月记录台账
+          <select id="kpiRecordFilter"><option value="">全部人员</option></select>
+        </div>
+        <div id="kpiRecords"></div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-title">近 6 个月总分<span class="hint">没有任何考核记录的月份显示「—」</span></div>
+        <div class="table-scroll" id="kpiHistory"></div>
+      </div>
+    </section>
+  </div>
+
+  <!-- KPI: deduction modal -->
+  <div class="modal-backdrop" id="deductionModalBackdrop">
+    <div class="modal">
+      <h2>记扣分</h2>
+      <form id="deductionForm">
+        <div class="field-row">
+          <div class="field">
+            <label for="deductionStaff">教辅人员</label>
+            <select id="deductionStaff" required></select>
+          </div>
+          <div class="field">
+            <label for="deductionDate">日期</label>
+            <input type="date" id="deductionDate" required />
+          </div>
+        </div>
+        <div class="field">
+          <label for="deductionRule">扣分项</label>
+          <select id="deductionRule" required></select>
+        </div>
+        <div class="field">
+          <label for="deductionQty">数量（<span id="deductionUnit">次</span>）</label>
+          <input type="number" id="deductionQty" min="1" step="1" value="1" required />
+        </div>
+        <div class="field-row helper-row">
+          <div class="field">
+            <label for="deductionExpected">应完成（选填）</label>
+            <input type="number" id="deductionExpected" min="0" step="1" placeholder="如：本周应沟通 15 人" />
+          </div>
+          <div class="field">
+            <label for="deductionActual">实际完成（选填）</label>
+            <input type="number" id="deductionActual" min="0" step="1" />
+          </div>
+        </div>
+        <div class="field">
+          <label for="deductionNote">备注</label>
+          <input type="text" id="deductionNote" placeholder="选填，例如：10月8日晚辅资料19点才交" />
+        </div>
+        <div class="kpi-preview" id="deductionPreview"></div>
+        <div class="modal-actions">
+          <button type="button" class="btn" data-close>取消</button>
+          <button type="submit" class="btn btn-primary">保存</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- KPI: score modal -->
+  <div class="modal-backdrop" id="scoreModalBackdrop">
+    <div class="modal">
+      <h2>录入得分</h2>
+      <form id="scoreForm">
+        <div class="field-row">
+          <div class="field">
+            <label for="scoreStaff">教辅人员</label>
+            <select id="scoreStaff" required></select>
+          </div>
+          <div class="field">
+            <label for="scoreDate">日期</label>
+            <input type="date" id="scoreDate" required />
+          </div>
+        </div>
+        <div class="field">
+          <label for="scoreItem">考核项</label>
+          <select id="scoreItem" required></select>
+        </div>
+        <div class="field">
+          <label for="scoreValue" id="scoreValueLabel">分数</label>
+          <input type="number" id="scoreValue" min="0" step="0.5" required />
+        </div>
+        <div class="field">
+          <label for="scoreNote">备注</label>
+          <input type="text" id="scoreNote" placeholder="选填，例如：第2周磨课，3人旁听" />
+        </div>
+        <div class="kpi-preview" id="scorePreview"></div>
+        <div class="modal-actions">
+          <button type="button" class="btn" data-close>取消</button>
+          <button type="submit" class="btn btn-primary">保存</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- KPI: staff detail modal -->
+  <div class="modal-backdrop" id="kpiDetailBackdrop">
+    <div class="modal modal-wide">
+      <h2 id="kpiDetailTitle"></h2>
+      <div id="kpiDetailBody"></div>
+      <div class="modal-actions">
+        <button type="button" class="btn" data-close>关闭</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- KPI: rules modal -->
+  <div class="modal-backdrop" id="kpiRulesBackdrop">
+    <div class="modal modal-wide">
+      <h2>考核规则</h2>
+      <p class="kpi-hint">改动会立即影响所有<strong>未归档</strong>月份的得分；已归档月份保持归档时的结果。</p>
+      <div id="kpiRulesBody"></div>
+      <div class="rules-footer">
+        <span id="kpiRulesTotal"></span>
+        <button type="button" class="btn" id="kpiAddItemBtn">+ 新增考核项</button>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn" data-close>关闭</button>
+      </div>
+    </div>
   </div>
 
   <!-- Task modal -->

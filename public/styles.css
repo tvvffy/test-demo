@@ -62,6 +62,7 @@
 }
 
 * { box-sizing: border-box; }
+[hidden] { display: none !important; }
 
 html, body {
   margin: 0;
@@ -291,7 +292,7 @@ body { min-height: 100vh; }
 
 .toolbar .spacer { flex: 1; }
 
-select, input[type="text"], input[type="date"], textarea {
+select, input[type="text"], input[type="date"], input[type="month"], input[type="number"], textarea {
   font-family: inherit;
   font-size: 13.5px;
   color: var(--text-primary);
@@ -328,6 +329,7 @@ select:focus, input:focus, textarea:focus { outline: 2px solid var(--series-1-li
 }
 .btn-text:hover { color: var(--text-primary); }
 .btn-danger-text { color: var(--status-critical); }
+.btn:disabled { opacity: 0.45; cursor: not-allowed; }
 
 /* Task table */
 .task-table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
@@ -453,6 +455,90 @@ select:focus, input:focus, textarea:focus { outline: 2px solid var(--series-1-li
 }
 .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
+/* ---------- 绩效考核 ---------- */
+.month-switch { display: flex; align-items: center; gap: 4px; }
+.month-switch .btn { padding: 7px 10px; }
+#view-kpi .panel-title { flex-wrap: wrap; gap: 8px; }
+.panel-actions { display: flex; gap: 8px; }
+.panel-actions .btn { white-space: nowrap; }
+.kpi-hint { font-size: 12.5px; color: var(--text-secondary); margin: -4px 0 10px; }
+.kpi-hint:empty { display: none; }
+.table-scroll { overflow-x: auto; margin-bottom: 10px; }
+
+.kpi-table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+.kpi-table th {
+  text-align: left;
+  font-weight: 500;
+  color: var(--text-muted);
+  font-size: 12px;
+  padding: 0 8px 8px;
+  border-bottom: 1px solid var(--gridline);
+  vertical-align: bottom;
+}
+.kpi-table th .sub { font-size: 11px; font-weight: 400; color: var(--text-muted); }
+.kpi-table td { padding: 10px 8px; border-bottom: 1px solid var(--gridline); vertical-align: top; }
+.kpi-table tr:last-child td { border-bottom: none; }
+.kpi-table th, .kpi-table td { white-space: nowrap; }
+.kpi-table .num { text-align: right; font-variant-numeric: tabular-nums; }
+.kpi-table .name { white-space: nowrap; }
+.kpi-table .total { font-weight: 600; font-size: 14.5px; }
+.kpi-table tr.clickable { cursor: pointer; }
+.kpi-table tr.clickable:hover td { background: var(--surface-2); }
+.kpi-table .delta.up { color: var(--status-good); }
+.kpi-table .delta.down { color: var(--status-critical); }
+
+.deduct { color: var(--status-critical); font-size: 12px; }
+.pill-missing {
+  display: inline-block;
+  font-size: 11.5px;
+  color: var(--text-secondary);
+  border: 1px dashed var(--status-warning);
+  border-radius: 999px;
+  padding: 1px 7px;
+  white-space: nowrap;
+}
+.notes-cell { color: var(--text-secondary); font-size: 12.5px; }
+
+.modal-wide { max-width: 680px; }
+.kpi-preview { font-size: 12.5px; color: var(--series-1); min-height: 18px; }
+.helper-row label { color: var(--text-muted); }
+
+.detail-item { padding: 10px 0; border-bottom: 1px solid var(--gridline); }
+.detail-item:last-child { border-bottom: none; }
+.detail-head { display: flex; justify-content: space-between; gap: 12px; font-size: 14px; font-weight: 600; }
+.detail-head .score { font-variant-numeric: tabular-nums; }
+.detail-text { font-size: 12.5px; color: var(--text-secondary); margin-top: 3px; }
+.detail-records { list-style: none; margin: 6px 0 0; padding: 0; font-size: 12.5px; }
+.detail-records li { display: flex; align-items: center; gap: 10px; padding: 3px 0; }
+.detail-records .date { color: var(--text-muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.detail-records .content { flex: 1; }
+.detail-records .note { color: var(--text-muted); }
+.detail-records .score { font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+.rule-card {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 12px 12px 6px;
+  margin-bottom: 12px;
+}
+.rule-card .field-row { flex-wrap: wrap; }
+.rule-card .field { min-width: 90px; }
+.rule-card .field.grow { flex: 2 1 160px; }
+.rule-card .field.f-score { flex: 0 0 80px; min-width: 0; }
+.rule-card .field.f-method { flex: 0 0 190px; }
+.rule-card .field.f-pass { flex: 0 0 140px; }
+.rules-title { font-size: 12.5px; color: var(--text-secondary); margin: 2px 0 6px; }
+.rule-row { display: flex; align-items: center; gap: 6px; margin-bottom: 6px; }
+.rule-row .r-name { flex: 1; min-width: 0; }
+.rule-row .r-unit { width: 52px; }
+.rule-row .r-points { width: 70px; }
+.rule-row .r-label { font-size: 12.5px; color: var(--text-muted); }
+.rule-card details { margin: 8px 0; font-size: 12.5px; }
+.rule-card summary { cursor: pointer; color: var(--text-secondary); margin-bottom: 8px; }
+.rule-card-actions { display: flex; justify-content: flex-end; align-items: center; gap: 8px; margin: 8px 0 6px; }
+.rules-footer { display: flex; justify-content: space-between; align-items: center; font-size: 13px; color: var(--text-secondary); }
+.rules-footer .warn, #kpiRulesTotal.warn { color: var(--status-critical); }
+
 @media (max-width: 640px) {
   .task-table thead { display: none; }
   .task-table, .task-table tbody, .task-table tr, .task-table td { display: block; width: 100%; }
@@ -460,4 +546,6 @@ select:focus, input:focus, textarea:focus { outline: 2px solid var(--series-1-li
   .task-table td { border-bottom: none; padding: 3px 0; }
   .task-table .col-actions { text-align: left; margin-top: 6px; }
   .meter-row { grid-template-columns: 90px 1fr 40px; }
+  .rule-row { flex-wrap: wrap; }
+  .rule-row .r-name { flex-basis: 100%; }
 }

@@ -2,7 +2,8 @@
 // Stored statuses are: 待开始 / 进行中 / 已完成
 // "已逾期" (overdue) is never stored — it's derived: not completed AND past due date.
 
-const TASK_TYPES = ['备课', '上课', '批改作业', '家长沟通', '教研', '其他'];
+// 按《绩效考核表》里的实际工作划分。早期版本的类型（备课、上课等）仍保留在已有任务上，不会被改掉。
+const TASK_TYPES = ['晚辅', '巩固练习', '测评', '模考', '组卷校对', '题库提交', '作业批改', '学员跟进', '磨课', '其他'];
 const STORED_STATUSES = ['待开始', '进行中', '已完成'];
 
 function todayStr() {
