@@ -1,13 +1,56 @@
 const path = require('path');
 const fs = require('fs');
-const Database = require('better-sqlite3');
+const { DatabaseSync } = require('node:sqlite');
 
 const dataDir = path.join(__dirname, '..', 'data');
 if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
 
-const db = new Database(path.join(dataDir, 'jiaofu.db'));
-db.pragma('journal_mode = WAL');
-db.pragma('foreign_keys = ON');
+// 用 Node.js 自带的 SQLite（node:sqlite），不需要另外编译安装数据库组件。
+// 这里包一层，让各路由的写法保持简单：
+//   - 命名参数（@name）只取 SQL 里用到的字段，对象里多余的字段忽略
+//   - undefined 当作 NULL
+//   - db.transaction(fn) 返回一个在事务里执行 fn 的函数，出错自动回滚
+function bindArgs(sql, args) {
+  const [first] = args;
+  if (args.length === 1 && first && typeof first === 'object' && !Array.isArray(first) && !ArrayBuffer.isView(first)) {
+    const params = {};
+    for (const [, name] of sql.matchAll(/@([A-Za-z_]\w*)/g)) params[name] = first[name] === undefined ? null : first[name];
+    return [params];
+  }
+  return args.map((v) => (v === undefined ? null : v));
+}
+
+function openDatabase(file) {
+  const raw = new DatabaseSync(file);
+  return {
+    exec: (sql) => raw.exec(sql),
+    prepare(sql) {
+      const stmt = raw.prepare(sql);
+      return {
+        all: (...args) => stmt.all(...bindArgs(sql, args)),
+        get: (...args) => stmt.get(...bindArgs(sql, args)),
+        run: (...args) => stmt.run(...bindArgs(sql, args)),
+      };
+    },
+    transaction(fn) {
+      return (...args) => {
+        raw.exec('BEGIN');
+        try {
+          const result = fn(...args);
+          raw.exec('COMMIT');
+          return result;
+        } catch (e) {
+          raw.exec('ROLLBACK');
+          throw e;
+        }
+      };
+    },
+  };
+}
+
+const db = openDatabase(path.join(dataDir, 'jiaofu.db'));
+db.exec('PRAGMA journal_mode = WAL');
+db.exec('PRAGMA foreign_keys = ON');
 
 db.exec(`
   CREATE TABLE IF NOT EXISTS staff (

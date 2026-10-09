@@ -20,16 +20,12 @@ router.get('/', (req, res) => {
 router.post('/', (req, res) => {
   const name = (req.body.name || '').trim();
   if (!name) return res.status(400).json({ error: '姓名不能为空' });
-  try {
-    const info = db.prepare('INSERT INTO staff (name) VALUES (?)').run(name);
-    const row = db.prepare('SELECT id, name, created_at FROM staff WHERE id = ?').get(info.lastInsertRowid);
-    res.status(201).json(row);
-  } catch (e) {
-    if (e.code === 'SQLITE_CONSTRAINT_UNIQUE') {
-      return res.status(409).json({ error: '该教辅人员已存在' });
-    }
-    res.status(500).json({ error: '创建失败' });
+  if (db.prepare('SELECT 1 FROM staff WHERE name = ?').get(name)) {
+    return res.status(409).json({ error: '该教辅人员已存在' });
   }
+  const info = db.prepare('INSERT INTO staff (name) VALUES (?)').run(name);
+  const row = db.prepare('SELECT id, name, created_at FROM staff WHERE id = ?').get(info.lastInsertRowid);
+  res.status(201).json(row);
 });
 
 // DELETE /api/staff/:id -> also unassigns their tasks (kept, just unassigned)
