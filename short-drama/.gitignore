@@ -1,0 +1,6 @@
+venv/
+models/
+*.mp4
+build/mix.wav
+build/frame_*.png
+build/detail.png
