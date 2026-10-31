@@ -66,13 +66,15 @@ router.get('/', (req, res) => {
 
 // POST /api/tasks
 router.post('/', (req, res) => {
-  const { title, type, assignee_id, scheduled_date, due_date, notes } = req.body;
+  const { title, type, assignee_id, scheduled_date, due_date, notes, status } = req.body;
   if (!title || !title.trim()) return res.status(400).json({ error: '任务标题不能为空' });
   const finalType = TASK_TYPES.includes(type) ? type : '其他';
+  const finalStatus = STORED_STATUSES.includes(status) ? status : '待开始';
+  const completed_at = finalStatus === '已完成' ? new Date().toISOString() : null;
 
   const info = db.prepare(`
-    INSERT INTO tasks (title, type, assignee_id, scheduled_date, due_date, notes, status, created_at, updated_at)
-    VALUES (@title, @type, @assignee_id, @scheduled_date, @due_date, @notes, '待开始', datetime('now'), datetime('now'))
+    INSERT INTO tasks (title, type, assignee_id, scheduled_date, due_date, notes, status, completed_at, created_at, updated_at)
+    VALUES (@title, @type, @assignee_id, @scheduled_date, @due_date, @notes, @status, @completed_at, datetime('now'), datetime('now'))
   `).run({
     title: title.trim(),
     type: finalType,
@@ -80,6 +82,8 @@ router.post('/', (req, res) => {
     scheduled_date: scheduled_date || null,
     due_date: due_date || null,
     notes: notes || null,
+    status: finalStatus,
+    completed_at,
   });
 
   const row = db.prepare(`
